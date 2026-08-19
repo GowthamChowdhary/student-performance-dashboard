@@ -1,0 +1,288 @@
+# ============================================
+# TASK 1: E-COMMERCE SALES DATA ANALYSIS
+# ============================================
+
+# 1. IMPORT LIBRARIES
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+# ============================================
+# 2. LOAD DATA
+# ============================================
+
+df = pd.read_csv("sales_data.csv")
+
+print("First 5 rows:")
+print(df.head())
+
+print("\nDataset Shape:")
+print(df.shape)
+
+print("\nDataset Information:")
+print(df.info())
+
+print("\nMissing Values:")
+print(df.isnull().sum())
+
+
+# ============================================
+# 3. DATA CLEANING
+# ============================================
+
+# Remove duplicate rows
+df = df.drop_duplicates()
+
+# Convert date column
+if "Date" in df.columns:
+    df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+
+# Check missing values again
+print("\nMissing Values After Cleaning:")
+print(df.isnull().sum())
+
+
+# ============================================
+# 4. BASIC STATISTICS
+# ============================================
+
+print("\nStatistical Summary:")
+print(df.describe())
+
+
+# ============================================
+# 5. TOTAL SALES
+# ============================================
+
+if "Sales" in df.columns:
+    total_sales = df["Sales"].sum()
+    print("\nTotal Sales:", total_sales)
+
+
+# ============================================
+# 6. TOTAL PROFIT
+# ============================================
+
+if "Profit" in df.columns:
+    total_profit = df["Profit"].sum()
+    print("Total Profit:", total_profit)
+
+
+# ============================================
+# 7. TOTAL QUANTITY SOLD
+# ============================================
+
+if "Quantity" in df.columns:
+    total_quantity = df["Quantity"].sum()
+    print("Total Quantity Sold:", total_quantity)
+
+
+# ============================================
+# 8. SALES BY CATEGORY
+# ============================================
+
+if "Category" in df.columns and "Sales" in df.columns:
+
+    category_sales = df.groupby("Category")["Sales"].sum().sort_values(
+        ascending=False
+    )
+
+    print("\nSales by Category:")
+    print(category_sales)
+
+    plt.figure(figsize=(8,5))
+    category_sales.plot(kind="bar")
+    plt.title("Sales by Category")
+    plt.xlabel("Category")
+    plt.ylabel("Sales")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
+
+# ============================================
+# 9. PROFIT BY CATEGORY
+# ============================================
+
+if "Category" in df.columns and "Profit" in df.columns:
+
+    category_profit = df.groupby("Category")["Profit"].sum().sort_values(
+        ascending=False
+    )
+
+    print("\nProfit by Category:")
+    print(category_profit)
+
+    plt.figure(figsize=(8,5))
+    category_profit.plot(kind="bar")
+    plt.title("Profit by Category")
+    plt.xlabel("Category")
+    plt.ylabel("Profit")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
+
+# ============================================
+# 10. TOP PRODUCTS
+# ============================================
+
+if "Product" in df.columns and "Sales" in df.columns:
+
+    top_products = (
+        df.groupby("Product")["Sales"]
+        .sum()
+        .sort_values(ascending=False)
+        .head(10)
+    )
+
+    print("\nTop 10 Products:")
+    print(top_products)
+
+    plt.figure(figsize=(10,6))
+    top_products.plot(kind="bar")
+    plt.title("Top 10 Products by Sales")
+    plt.xlabel("Product")
+    plt.ylabel("Sales")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
+
+# ============================================
+# 11. SALES BY REGION
+# ============================================
+
+if "Region" in df.columns and "Sales" in df.columns:
+
+    region_sales = (
+        df.groupby("Region")["Sales"]
+        .sum()
+        .sort_values(ascending=False)
+    )
+
+    print("\nSales by Region:")
+    print(region_sales)
+
+    plt.figure(figsize=(8,5))
+    region_sales.plot(kind="bar")
+    plt.title("Sales by Region")
+    plt.xlabel("Region")
+    plt.ylabel("Sales")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
+
+# ============================================
+# 12. MONTHLY SALES TREND
+# ============================================
+
+if "Date" in df.columns and "Sales" in df.columns:
+
+    monthly_sales = (
+        df.set_index("Date")
+        .resample("ME")["Sales"]
+        .sum()
+    )
+
+    print("\nMonthly Sales:")
+    print(monthly_sales)
+
+    plt.figure(figsize=(12,6))
+    plt.plot(monthly_sales.index, monthly_sales.values, marker="o")
+    plt.title("Monthly Sales Trend")
+    plt.xlabel("Month")
+    plt.ylabel("Sales")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
+
+# ============================================
+# 13. SALES VS PROFIT
+# ============================================
+
+if "Sales" in df.columns and "Profit" in df.columns:
+
+    plt.figure(figsize=(8,6))
+    sns.scatterplot(
+        data=df,
+        x="Sales",
+        y="Profit"
+    )
+
+    plt.title("Sales vs Profit")
+    plt.xlabel("Sales")
+    plt.ylabel("Profit")
+    plt.tight_layout()
+    plt.show()
+
+
+# ============================================
+# 14. CORRELATION ANALYSIS
+# ============================================
+
+numeric_columns = df.select_dtypes(include=np.number)
+
+if len(numeric_columns.columns) > 1:
+
+    correlation = numeric_columns.corr()
+
+    print("\nCorrelation Matrix:")
+    print(correlation)
+
+    plt.figure(figsize=(10,7))
+    sns.heatmap(
+        correlation,
+        annot=True,
+        cmap="coolwarm",
+        fmt=".2f"
+    )
+
+    plt.title("Correlation Heatmap")
+    plt.tight_layout()
+    plt.show()
+
+
+# ============================================
+# 15. KEY BUSINESS INSIGHTS
+# ============================================
+
+print("\n============================================")
+print("KEY BUSINESS INSIGHTS")
+print("============================================")
+
+if "Sales" in df.columns:
+
+    print(
+        "Highest Sales Category:",
+        df.groupby("Category")["Sales"].sum().idxmax()
+        if "Category" in df.columns else "N/A"
+    )
+
+if "Profit" in df.columns:
+
+    print(
+        "Most Profitable Category:",
+        df.groupby("Category")["Profit"].sum().idxmax()
+        if "Category" in df.columns else "N/A"
+    )
+
+if "Product" in df.columns and "Sales" in df.columns:
+
+    print(
+        "Best Selling Product:",
+        df.groupby("Product")["Sales"].sum().idxmax()
+    )
+
+if "Region" in df.columns and "Sales" in df.columns:
+
+    print(
+        "Best Performing Region:",
+        df.groupby("Region")["Sales"].sum().idxmax()
+    )
+
+print("\nAnalysis Completed Successfully!")
